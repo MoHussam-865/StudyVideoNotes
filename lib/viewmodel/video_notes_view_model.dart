@@ -166,13 +166,22 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   bool deleteNoteAt(int index) {
     if (index < 0 || index >= notes.length) return false;
-    
+
     notes.removeAt(index);
-    selectedIndex = null;
-    
-    // Automatically save to JSON
+
+    if (selectedIndex != null) {
+      if (selectedIndex == index) {
+        // If the deleted note was being edited, close the editor
+        selectedIndex = null;
+        isEditorVisible = false;
+        quillController.document = quill.Document();
+      } else if (selectedIndex! > index) {
+        // If a note before the selected one was deleted, shift the index
+        selectedIndex = selectedIndex! - 1;
+      }
+    }
+
     _saveNotesToJson();
-    
     return true;
   }
 
@@ -180,6 +189,13 @@ class VideoNotesViewModel extends ChangeNotifier {
     if (videoController == null) return;
     final Duration d = Duration(milliseconds: notes[index].milliseconds);
     await videoController!.seekTo(d);
+  }
+
+  void loadNoteForEditing(int index) {
+    selectedIndex = index;
+    // Clone the document to avoid mutating the original until saved
+    quillController.document = quill.Document.fromJson(notes[index].document.toDelta().toJson());
+    isEditorVisible = true;
   }
 
   // Remove manual save methods since they're no longer needed
