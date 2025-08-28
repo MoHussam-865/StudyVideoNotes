@@ -6,7 +6,7 @@ import '../models/timestamped_note.dart';
 
 class VideoNotesDesktopView extends StatefulWidget {
   final VideoNotesViewModel vm;
-  const VideoNotesDesktopView({Key? key, required this.vm}) : super(key: key);
+  const VideoNotesDesktopView({super.key, required this.vm});
 
   @override
   State<VideoNotesDesktopView> createState() => _VideoNotesDesktopViewState();

@@ -1,6 +1,5 @@
 import 'package:video_notes/view/full_video_view.dart';
 import 'package:video_notes/viewmodel/full_video_view_model.dart';
-
 import '../models/timestamped_message.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -14,9 +13,19 @@ import '../models/timestamped_note.dart';
 class VideoNotesViewModel extends ChangeNotifier {
   List<TimestampedMessage> timestampedMessages = [];
 
-  /// Loads timestamped messages from a .txt file with the same name as the video.
+ 
+  VideoPlayerController? videoController;
+  Future<void>? initializeVideoFuture;
+  final List<TimestampedNote> notes = [];
+  int? selectedIndex;
+  final quill.QuillController quillController = quill.QuillController.basic();
+  bool isEditorVisible = false;
+  String? videoPath;
+
+
+ /// Loads timestamped messages from a .txt file with the same name as the video.
   /// Returns true if loaded, false if file not found or error.
-  Future<bool> loadTimestampedMessagesForVideo(String videoPath) async {
+  Future<bool> _loadTimestampedMessagesForVideo(String videoPath) async {
     try {
       final videoFile = File(videoPath);
       final videoDir = videoFile.parent.path;
@@ -45,6 +54,7 @@ class VideoNotesViewModel extends ChangeNotifier {
       MaterialPageRoute(
         builder: (_) => FullVideoView(
           vm: FullVideoViewModel(videoController: videoController!),
+          timestampedMessages: timestampedMessages,
         ),
       ),
     );
@@ -60,14 +70,6 @@ class VideoNotesViewModel extends ChangeNotifier {
     }
   }
 
-  VideoPlayerController? videoController;
-  Future<void>? initializeVideoFuture;
-  final List<TimestampedNote> notes = [];
-  int? selectedIndex;
-  final quill.QuillController quillController = quill.QuillController.basic();
-  bool isEditorVisible = false;
-  String? videoPath;
-
   Future<void> pickAndOpenVideo(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -81,7 +83,7 @@ class VideoNotesViewModel extends ChangeNotifier {
 
       // Try to load existing notes from JSON file with same name
       await _loadNotesFromJson(videoPath);
-
+      await _loadTimestampedMessagesForVideo(videoPath);
       await loadVideo(context, file);
     }
   }
