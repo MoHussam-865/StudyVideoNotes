@@ -4,10 +4,15 @@ import 'package:video_player/video_player.dart';
 import '../viewmodel/video_notes_view_model.dart';
 import '../models/timestamped_note.dart';
 
-class VideoNotesDesktopView extends StatelessWidget {
+class VideoNotesDesktopView extends StatefulWidget {
   final VideoNotesViewModel vm;
   const VideoNotesDesktopView({Key? key, required this.vm}) : super(key: key);
 
+  @override
+  State<VideoNotesDesktopView> createState() => _VideoNotesDesktopViewState();
+}
+
+class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
   String _formatTime(Duration d) {
     String two(int v) => v.toString().padLeft(2, '0');
     final int h = d.inHours;
@@ -19,6 +24,7 @@ class VideoNotesDesktopView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final vm = widget.vm;
     return Row(
       children: <Widget>[
         Expanded(
@@ -34,7 +40,9 @@ class VideoNotesDesktopView extends StatelessWidget {
                   future: vm.initializeVideoFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
-                      return const Expanded(child: Center(child: CircularProgressIndicator()));
+                      return const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      );
                     }
                     final VideoPlayerController c = vm.videoController!;
                     return Expanded(
@@ -53,7 +61,11 @@ class VideoNotesDesktopView extends StatelessWidget {
                             child: Row(
                               children: <Widget>[
                                 IconButton(
-                                  icon: Icon(c.value.isPlaying ? Icons.pause : Icons.play_arrow),
+                                  icon: Icon(
+                                    c.value.isPlaying
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                  ),
                                   onPressed: () {
                                     (context as Element).markNeedsBuild();
                                     if (c.value.isPlaying) {
@@ -67,22 +79,32 @@ class VideoNotesDesktopView extends StatelessWidget {
                                   child: Slider(
                                     value: c.value.position.inMilliseconds
                                         .toDouble()
-                                        .clamp(0, c.value.duration.inMilliseconds.toDouble()),
+                                        .clamp(
+                                          0,
+                                          c.value.duration.inMilliseconds
+                                              .toDouble(),
+                                        ),
                                     min: 0,
-                                    max: c.value.duration.inMilliseconds.toDouble(),
+                                    max: c.value.duration.inMilliseconds
+                                        .toDouble(),
                                     onChanged: (v) {
-                                      c.seekTo(Duration(milliseconds: v.toInt()));
+                                      c.seekTo(
+                                        Duration(milliseconds: v.toInt()),
+                                      );
                                       (context as Element).markNeedsBuild();
                                     },
                                   ),
                                 ),
-                                Text('${_formatTime(c.value.position)} / ${_formatTime(c.value.duration)}'),
+                                Text(
+                                  '${_formatTime(c.value.position)} / ${_formatTime(c.value.duration)}',
+                                ),
                                 const SizedBox(width: 8),
                                 IconButton(
                                   tooltip: 'Fullscreen',
                                   icon: const Icon(Icons.fullscreen),
-                                  onPressed: () {
-                                    // This should be handled by the parent
+                                  onPressed: () async {
+                                    await vm.navigateToFullVideoView(context);
+                                    setState(() {});
                                   },
                                 ),
                               ],
@@ -101,7 +123,8 @@ class VideoNotesDesktopView extends StatelessWidget {
                       ElevatedButton.icon(
                         onPressed: () async {
                           if (!vm.canAddNote()) return;
-                          if (vm.videoController != null && vm.videoController!.value.isPlaying) {
+                          if (vm.videoController != null &&
+                              vm.videoController!.value.isPlaying) {
                             await vm.videoController!.pause();
                           }
                           vm.ensureEditorVisibleForNewNote();
@@ -126,7 +149,9 @@ class VideoNotesDesktopView extends StatelessWidget {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    child: quill.QuillEditor.basic(controller: vm.quillController),
+                    child: quill.QuillEditor.basic(
+                      controller: vm.quillController,
+                    ),
                   ),
                 ),
                 Padding(
@@ -137,7 +162,8 @@ class VideoNotesDesktopView extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: () async {
                             if (!vm.canAddNote()) return;
-                            if (vm.videoController != null && vm.videoController!.value.isPlaying) {
+                            if (vm.videoController != null &&
+                                vm.videoController!.value.isPlaying) {
                               await vm.videoController!.pause();
                             }
                             if (vm.selectedIndex == null) {
@@ -149,7 +175,10 @@ class VideoNotesDesktopView extends StatelessWidget {
                                 (context as Element).markNeedsBuild();
                               }
                             } else {
-                              final ok = vm.updateNoteAt(context, vm.selectedIndex!);
+                              final ok = vm.updateNoteAt(
+                                context,
+                                vm.selectedIndex!,
+                              );
                               if (ok) {
                                 if (vm.videoController != null) {
                                   await vm.videoController!.play();
@@ -158,8 +187,16 @@ class VideoNotesDesktopView extends StatelessWidget {
                               }
                             }
                           },
-                          icon: Icon(vm.selectedIndex == null ? Icons.save : Icons.update),
-                          label: Text(vm.selectedIndex == null ? 'Save Note' : 'Update Note'),
+                          icon: Icon(
+                            vm.selectedIndex == null
+                                ? Icons.save
+                                : Icons.update,
+                          ),
+                          label: Text(
+                            vm.selectedIndex == null
+                                ? 'Save Note'
+                                : 'Update Note',
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -189,7 +226,10 @@ class VideoNotesDesktopView extends StatelessWidget {
             children: <Widget>[
               const Padding(
                 padding: EdgeInsets.all(8.0),
-                child: Text('Notes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Notes',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
               Expanded(
                 child: ListView.builder(
@@ -200,15 +240,19 @@ class VideoNotesDesktopView extends StatelessWidget {
                       return const SizedBox.shrink();
                     }
                     final TimestampedNote n = vm.notes[index];
-                    final String title = n.plainText.split('\n').isNotEmpty ? n.plainText.split('\n').first : '';
+                    final String title = n.plainText.split('\n').isNotEmpty
+                        ? n.plainText.split('\n').first
+                        : '';
                     return ListTile(
                       selected: index == vm.selectedIndex,
                       title: Text(title),
-                      subtitle: Text(_formatTime(Duration(milliseconds: n.milliseconds))),
+                      subtitle: Text(
+                        _formatTime(Duration(milliseconds: n.milliseconds)),
+                      ),
                       onTap: () async {
                         vm.selectNote(index);
                         await vm.seekToNote(index);
-                        (context as Element).markNeedsBuild();
+                        setState(() {});
                       },
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -216,12 +260,15 @@ class VideoNotesDesktopView extends StatelessWidget {
                           IconButton(
                             tooltip: 'Load into editor',
                             icon: const Icon(Icons.edit),
-                            onPressed: () { vm.loadNoteForEditing(index); (context as Element).markNeedsBuild(); },
+                            onPressed: () {
+                              vm.loadNoteForEditing(index);
+                              setState(() {});
+                            },
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline),
                             tooltip: 'Delete',
-                            onPressed: () { 
+                            onPressed: () {
                               final ok = vm.deleteNoteAt(index);
                               if (ok) (context as Element).markNeedsBuild();
                             },

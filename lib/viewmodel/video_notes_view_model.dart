@@ -1,3 +1,7 @@
+import 'package:video_notes/view/full_video_view.dart';
+import 'package:video_notes/viewmodel/full_video_view_model.dart';
+
+import '../models/timestamped_message.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -8,6 +12,54 @@ import 'package:video_player/video_player.dart';
 import '../models/timestamped_note.dart';
 
 class VideoNotesViewModel extends ChangeNotifier {
+  List<TimestampedMessage> timestampedMessages = [];
+
+  /// Loads timestamped messages from a .txt file with the same name as the video.
+  /// Returns true if loaded, false if file not found or error.
+  Future<bool> loadTimestampedMessagesForVideo(String videoPath) async {
+    try {
+      final videoFile = File(videoPath);
+      final videoDir = videoFile.parent.path;
+      final videoName = path.basenameWithoutExtension(videoFile.path);
+      final txtPath = '$videoDir${Platform.pathSeparator}$videoName.txt';
+      final txtFile = File(txtPath);
+      if (!await txtFile.exists()) {
+        timestampedMessages = [];
+        return false;
+      }
+      final lines = await txtFile.readAsLines();
+      timestampedMessages = lines
+          .where((line) => line.trim().isNotEmpty)
+          .map((line) => TimestampedMessage.fromLine(line))
+          .toList();
+      return true;
+    } catch (e) {
+      timestampedMessages = [];
+      return false;
+    }
+  }
+
+  Future<void> navigateToFullVideoView(BuildContext context) async {
+    if (videoController == null) return;
+    final result = await Navigator.of(context).push<Duration>(
+      MaterialPageRoute(
+        builder: (_) => FullVideoView(
+          vm: FullVideoViewModel(videoController: videoController!),
+        ),
+      ),
+    );
+    if (result != null) {
+      // Pause video and open editor at this time
+      await videoController!.pause();
+      isEditorVisible = true;
+      selectedIndex = null;
+      quillController.document = quill.Document();
+      // Seek to the returned time
+      await videoController!.seekTo(result);
+      notifyListeners();
+    }
+  }
+
   VideoPlayerController? videoController;
   Future<void>? initializeVideoFuture;
   final List<TimestampedNote> notes = [];
@@ -15,7 +67,6 @@ class VideoNotesViewModel extends ChangeNotifier {
   final quill.QuillController quillController = quill.QuillController.basic();
   bool isEditorVisible = false;
   String? videoPath;
-
 
   Future<void> pickAndOpenVideo(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
@@ -27,10 +78,10 @@ class VideoNotesViewModel extends ChangeNotifier {
       final file = File(result.files.first.path!);
       final videoPath = file.absolute.path;
       this.videoPath = videoPath;
-      
+
       // Try to load existing notes from JSON file with same name
       await _loadNotesFromJson(videoPath);
-      
+
       await loadVideo(context, file);
     }
   }
@@ -41,13 +92,15 @@ class VideoNotesViewModel extends ChangeNotifier {
       final videoDir = videoFile.parent.path;
       final videoName = path.basenameWithoutExtension(videoFile.path);
       final jsonPath = '$videoDir${Platform.pathSeparator}$videoName.json';
-      
+
       final jsonFile = File(jsonPath);
       if (await jsonFile.exists()) {
         final jsonString = await jsonFile.readAsString();
         final List<dynamic> jsonList = jsonDecode(jsonString);
         notes.clear();
-        notes.addAll(jsonList.map((json) => TimestampedNote.fromJson(json)).toList());
+        notes.addAll(
+          jsonList.map((json) => TimestampedNote.fromJson(json)).toList(),
+        );
         selectedIndex = null;
       } else {
         notes.clear();
@@ -62,16 +115,16 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   Future<void> _saveNotesToJson() async {
     if (videoController == null || notes.isEmpty || videoPath == null) return;
-    
+
     try {
       final videoFile = File(videoPath!);
       final videoDir = videoFile.parent.path;
       final videoName = path.basenameWithoutExtension(videoFile.path);
       final jsonPath = '$videoDir${Platform.pathSeparator}$videoName.json';
-      
+
       final jsonList = notes.map((note) => note.toJson()).toList();
       final jsonString = jsonEncode(jsonList);
-      
+
       final jsonFile = File(jsonPath);
       await jsonFile.writeAsString(jsonString);
     } catch (e) {
@@ -87,14 +140,16 @@ class VideoNotesViewModel extends ChangeNotifier {
       initializeVideoFuture = controller.initialize();
       await initializeVideoFuture;
       if (!controller.value.isInitialized) {
-        throw StateError(controller.value.errorDescription ?? 'Failed to initialize video');
+        throw StateError(
+          controller.value.errorDescription ?? 'Failed to initialize video',
+        );
       }
       controller.addListener(() {});
       await controller.play();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cannot open video: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Cannot open video: $e')));
       await controller.dispose();
       videoController = null;
     }
@@ -114,24 +169,24 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   bool addNoteAtCurrentTime(BuildContext context) {
     if (!canAddNote()) return false;
-    
+
     final currentTime = videoController!.value.position.inMilliseconds;
     final note = TimestampedNote(
       milliseconds: currentTime,
       document: quillController.document,
     );
-    
+
     notes.add(note);
     selectedIndex = notes.indexOf(note);
     quillController.document = quill.Document();
     isEditorVisible = false; // Hide editor after adding note
-    
+
     // Automatically save to JSON
     _saveNotesToJson();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Note added.')),
-    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Note added.')));
     return true;
   }
 
@@ -142,25 +197,25 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   bool updateNoteAt(BuildContext context, int index) {
     if (index < 0 || index >= notes.length) return false;
-    
+
     final note = notes[index];
     final updatedNote = TimestampedNote(
       milliseconds: note.milliseconds,
       document: quillController.document,
       createdAt: note.createdAt,
     );
-    
+
     notes[index] = updatedNote;
     selectedIndex = null;
     quillController.document = quill.Document();
     isEditorVisible = false;
-    
+
     // Automatically save to JSON
     _saveNotesToJson();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Note updated.')),
-    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Note updated.')));
     return true;
   }
 
@@ -185,16 +240,43 @@ class VideoNotesViewModel extends ChangeNotifier {
     return true;
   }
 
-  Future<void> seekToNote(int index) async {
+  Future<void> seekToNote(int index, {BuildContext? context}) async {
     if (videoController == null) return;
-    final Duration d = Duration(milliseconds: notes[index].milliseconds);
-    await videoController!.seekTo(d);
+    if (index < 0 || index >= notes.length) return;
+    final int noteMs = notes[index].milliseconds;
+    final int videoMs = videoController!.value.duration.inMilliseconds;
+    if (videoMs == 0) return;
+    int seekMs = noteMs;
+    if (noteMs < 0) seekMs = 0;
+    if (noteMs > videoMs) {
+      seekMs = videoMs;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Note time is beyond video length. Seeking to end of video.',
+            ),
+          ),
+        );
+      }
+    }
+    try {
+      await videoController!.seekTo(Duration(milliseconds: seekMs));
+    } catch (e) {
+      if (context != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to seek to note: $e')));
+      }
+    }
   }
 
   void loadNoteForEditing(int index) {
     selectedIndex = index;
     // Clone the document to avoid mutating the original until saved
-    quillController.document = quill.Document.fromJson(notes[index].document.toDelta().toJson());
+    quillController.document = quill.Document.fromJson(
+      notes[index].document.toDelta().toJson(),
+    );
     isEditorVisible = true;
   }
 
@@ -220,5 +302,3 @@ class VideoNotesViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-
-
