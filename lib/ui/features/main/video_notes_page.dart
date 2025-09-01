@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../viewmodel/video_notes_view_model.dart';
+import 'video_notes_view_model.dart';
 import 'video_notes_desktop_view.dart';
 import 'video_notes_mobile_view.dart';
 
@@ -11,17 +11,17 @@ class VideoNotesView extends StatefulWidget {
 }
 
 class _VideoNotesPageState extends State<VideoNotesView> {
-  late final VideoNotesViewModel vm;
+  late final VideoNotesViewModel viewModel;
 
   @override
   void initState() {
     super.initState();
-    vm = VideoNotesViewModel();
+    viewModel = VideoNotesViewModel();
   }
 
   @override
   void dispose() {
-    vm.dispose();
+    viewModel.dispose();
     super.dispose();
   }
 
@@ -33,14 +33,14 @@ class _VideoNotesPageState extends State<VideoNotesView> {
         actions: <Widget>[
           IconButton(
             onPressed: () async {
-              await vm.pickAndOpenVideo(context);
+              await viewModel.pickAndOpenVideo(context);
               setState(() {});
             },
             icon: const Icon(Icons.folder_open),
           ),
           IconButton(
             onPressed: () {
-              vm.closeVideoAndReset();
+              viewModel.closeVideoAndReset();
               setState(() {});
             },
             icon: const Icon(Icons.close),
@@ -51,9 +51,9 @@ class _VideoNotesPageState extends State<VideoNotesView> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth >= 600) {
-            return VideoNotesDesktopView(vm: vm);
+            return VideoNotesDesktopView(viewModel: viewModel);
           } else {
-            return VideoNotesMobileView(vm: vm);
+            return VideoNotesMobileView(viewModel: viewModel);
           }
         },
       ),

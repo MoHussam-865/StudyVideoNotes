@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import '../models/timestamped_note.dart';
+import '../../data/models/timestamped_note.dart';
 
 class FileService {
   const FileService();

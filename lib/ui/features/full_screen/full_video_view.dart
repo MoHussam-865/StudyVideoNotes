@@ -1,38 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import '../viewmodel/full_video_view_model.dart';
-import '../models/timestamped_message.dart';
+import 'full_video_view_model.dart';
+import '../../../data/models/timestamped_message.dart';
 
 class FullVideoView extends StatefulWidget {
-  final FullVideoViewModel vm;
-  final List<TimestampedMessage> timestampedMessages;
 
-  const FullVideoView({
-    super.key,
-    required this.vm,
-    required this.timestampedMessages,
-  });
+  const FullVideoView({super.key});
 
   @override
   State<FullVideoView> createState() => _FullVideoViewState();
 }
 
 class _FullVideoViewState extends State<FullVideoView> {
+  late FullVideoViewModel viewModel;
   bool _showList = false;
-
-  void _addNoteAndBack() {
-    Navigator.of(context).pop(widget.vm.position);
-  }
 
   @override
   void initState() {
     super.initState();
-    widget.vm.videoController.addListener(_onControllerUpdate);
+
+    viewModel = context.read();
+    viewModel.videoController.addListener(_onControllerUpdate);
   }
+
+
+  void _addNoteAndBack() {
+    Navigator.pop(context, viewModel.position);
+  }
+
+
 
   @override
   void dispose() {
-    widget.vm.videoController.removeListener(_onControllerUpdate);
+    viewModel.videoController.removeListener(_onControllerUpdate);
     super.dispose();
   }
 
@@ -42,7 +43,6 @@ class _FullVideoViewState extends State<FullVideoView> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = widget.vm;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -93,8 +93,8 @@ class _FullVideoViewState extends State<FullVideoView> {
                   ),
                   Center(
                     child: AspectRatio(
-                      aspectRatio: vm.aspectRatio,
-                      child: VideoPlayer(vm.videoController),
+                      aspectRatio: viewModel.aspectRatio,
+                      child: VideoPlayer(viewModel.videoController),
                     ),
                   ),
                   Positioned(
@@ -105,27 +105,33 @@ class _FullVideoViewState extends State<FullVideoView> {
                       children: [
                         IconButton(
                           icon: Icon(
-                            vm.isPlaying ? Icons.pause : Icons.play_arrow,
+                            viewModel.isPlaying
+                                ? Icons.pause
+                                : Icons.play_arrow,
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            if (vm.isPlaying) {
-                              vm.pause();
+                            if (viewModel.isPlaying) {
+                              viewModel.pause();
                             } else {
-                              vm.play();
+                              viewModel.play();
                             }
                           },
                         ),
                         Expanded(
                           child: Slider(
-                            value: vm.position.inMilliseconds.toDouble().clamp(
-                              0,
-                              vm.duration.inMilliseconds.toDouble(),
-                            ),
+                            value: viewModel.position.inMilliseconds
+                                .toDouble()
+                                .clamp(
+                                  0,
+                                  viewModel.duration.inMilliseconds.toDouble(),
+                                ),
                             min: 0,
-                            max: vm.duration.inMilliseconds.toDouble(),
+                            max: viewModel.duration.inMilliseconds.toDouble(),
                             onChanged: (v) {
-                              vm.seekTo(Duration(milliseconds: v.toInt()));
+                              viewModel.seekTo(
+                                Duration(milliseconds: v.toInt()),
+                              );
                             },
                           ),
                         ),
@@ -162,9 +168,9 @@ class _FullVideoViewState extends State<FullVideoView> {
                     ),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: widget.timestampedMessages.length,
+                        itemCount: viewModel.timestampedMessages.length,
                         itemBuilder: (context, index) {
-                          final msg = widget.timestampedMessages[index];
+                          final msg = viewModel.timestampedMessages[index];
                           String two(int v) => v.toString().padLeft(2, '0');
                           final h = msg.time.inHours;
                           final m = msg.time.inMinutes.remainder(60);
@@ -182,7 +188,7 @@ class _FullVideoViewState extends State<FullVideoView> {
                               style: const TextStyle(color: Colors.white70),
                             ),
                             onTap: () {
-                              vm.seekTo(msg.time);
+                              viewModel.seekTo(msg.time);
                             },
                           );
                         },

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:video_player/video_player.dart';
-import '../viewmodel/video_notes_view_model.dart';
-import '../models/timestamped_note.dart';
+import 'video_notes_view_model.dart';
+import '../../../data/models/timestamped_note.dart';
 
 class VideoNotesDesktopView extends StatefulWidget {
-  final VideoNotesViewModel vm;
-  const VideoNotesDesktopView({super.key, required this.vm});
+  final VideoNotesViewModel viewModel;
+  const VideoNotesDesktopView({super.key, required this.viewModel});
 
   @override
   State<VideoNotesDesktopView> createState() => _VideoNotesDesktopViewState();
@@ -24,7 +24,7 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = widget.vm;
+    final vm = widget.viewModel;
     return Row(
       children: <Widget>[
         Expanded(

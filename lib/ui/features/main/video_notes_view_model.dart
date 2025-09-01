@@ -1,6 +1,6 @@
-import 'package:video_notes/view/full_video_view.dart';
-import 'package:video_notes/viewmodel/full_video_view_model.dart';
-import '../models/timestamped_message.dart';
+import 'package:video_notes/routes/routes.dart';
+import 'package:video_notes/ui/features/full_screen/full_video_view.dart';
+import '../../../data/models/timestamped_message.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -8,12 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:path/path.dart' as path;
 import 'package:video_player/video_player.dart';
-import '../models/timestamped_note.dart';
+import '../../../data/models/timestamped_note.dart';
 
 class VideoNotesViewModel extends ChangeNotifier {
-  List<TimestampedMessage> timestampedMessages = [];
 
- 
+  List<TimestampedMessage> timestampedMessages = [];
   VideoPlayerController? videoController;
   Future<void>? initializeVideoFuture;
   final List<TimestampedNote> notes = [];
@@ -50,23 +49,20 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   Future<void> navigateToFullVideoView(BuildContext context) async {
     if (videoController == null) return;
-    final result = await Navigator.of(context).push<Duration>(
-      MaterialPageRoute(
-        builder: (_) => FullVideoView(
-          vm: FullVideoViewModel(videoController: videoController!),
-          timestampedMessages: timestampedMessages,
-        ),
-      ),
-    );
-    if (result != null) {
-      // Pause video and open editor at this time
-      await videoController!.pause();
-      isEditorVisible = true;
-      selectedIndex = null;
-      quillController.document = quill.Document();
-      // Seek to the returned time
-      await videoController!.seekTo(result);
-      notifyListeners();
+    try {
+      final result = await Navigator.pushNamed(context, MyRouts.fullScreen.value) as Duration?;
+      if (result != null) {
+        // Pause video and open editor at this time
+        await videoController!.pause();
+        isEditorVisible = true;
+        selectedIndex = null;
+        quillController.document = quill.Document();
+        // Seek to the returned time
+        await videoController!.seekTo(result);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error getting duration $e');
     }
   }
 
@@ -298,6 +294,7 @@ class VideoNotesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void dispose() {
     videoController?.dispose();
     quillController.dispose();

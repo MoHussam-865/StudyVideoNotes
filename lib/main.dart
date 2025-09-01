@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'view/video_notes_page.dart';
+import 'package:video_notes/routes/app_routes.dart';
+import 'package:video_notes/routes/routes.dart';
+import 'core/di/app_model.dart';
+import 'package:provider/provider.dart';
+
 
 void main() {
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    // dependency injection
+    providers: AppModel.dependancies,
+
+    child: const MyApp(),
+  ),);
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -40,7 +50,8 @@ class MyApp extends StatelessWidget {
         Locale('tr'),
         Locale('uk'),
       ],
-      home: const VideoNotesView(),
+      initialRoute: MyRouts.home.value,
+      routes: AppRoutes.routes,
     );
   }
 }

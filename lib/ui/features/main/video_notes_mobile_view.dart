@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:video_player/video_player.dart';
-import '../viewmodel/video_notes_view_model.dart';
-import '../models/timestamped_note.dart';
+import 'video_notes_view_model.dart';
+import '../../../data/models/timestamped_note.dart';
 
 class VideoNotesMobileView extends StatefulWidget {
-  final VideoNotesViewModel vm;
-  const VideoNotesMobileView({super.key, required this.vm});
+  final VideoNotesViewModel viewModel;
+  const VideoNotesMobileView({super.key, required this.viewModel});
 
   @override
   State<VideoNotesMobileView> createState() => _VideoNotesMobileViewState();
@@ -26,7 +26,7 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = widget.vm;
+    final vm = widget.viewModel;
     final List<Widget> pages = [
       // Video Page
       Column(
