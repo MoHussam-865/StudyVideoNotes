@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import '../../widgets/video_controls.dart';
 import 'full_video_view_model.dart';
-import '../../../data/models/timestamped_message.dart';
 
 class FullVideoView extends StatefulWidget {
+
 
   const FullVideoView({super.key});
 
@@ -22,6 +23,7 @@ class _FullVideoViewState extends State<FullVideoView> {
 
     viewModel = context.read();
     viewModel.videoController.addListener(_onControllerUpdate);
+
   }
 
 
@@ -97,53 +99,61 @@ class _FullVideoViewState extends State<FullVideoView> {
                       child: VideoPlayer(viewModel.videoController),
                     ),
                   ),
-                  Positioned(
-                    bottom: 24,
-                    left: 24,
-                    right: 24,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            viewModel.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            if (viewModel.isPlaying) {
-                              viewModel.pause();
-                            } else {
-                              viewModel.play();
-                            }
-                          },
-                        ),
-                        Expanded(
-                          child: Slider(
-                            value: viewModel.position.inMilliseconds
-                                .toDouble()
-                                .clamp(
-                                  0,
-                                  viewModel.duration.inMilliseconds.toDouble(),
-                                ),
-                            min: 0,
-                            max: viewModel.duration.inMilliseconds.toDouble(),
-                            onChanged: (v) {
-                              viewModel.seekTo(
-                                Duration(milliseconds: v.toInt()),
-                              );
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    ),
+                  VideoControls(
+                    c: viewModel.videoController,
+                    onFullScreenClicked: () {
+                      Navigator.of(context).pop();
+                    },
+                    refresh: () => setState(() {}),
+                    color: Colors.white,
                   ),
+                  // Positioned(
+                  //   bottom: 24,
+                  //   left: 24,
+                  //   right: 24,
+                  //   child: Row(
+                  //     children: [
+                  //       IconButton(
+                  //         icon: Icon(
+                  //           viewModel.isPlaying
+                  //               ? Icons.pause
+                  //               : Icons.play_arrow,
+                  //           color: Colors.white,
+                  //         ),
+                  //         onPressed: () {
+                  //           if (viewModel.isPlaying) {
+                  //             viewModel.pause();
+                  //           } else {
+                  //             viewModel.play();
+                  //           }
+                  //         },
+                  //       ),
+                  //       Expanded(
+                  //         child: Slider(
+                  //           value: viewModel.position.inMilliseconds
+                  //               .toDouble()
+                  //               .clamp(
+                  //                 0,
+                  //                 viewModel.duration.inMilliseconds.toDouble(),
+                  //               ),
+                  //           min: 0,
+                  //           max: viewModel.duration.inMilliseconds.toDouble(),
+                  //           onChanged: (v) {
+                  //             viewModel.seekTo(
+                  //               Duration(milliseconds: v.toInt()),
+                  //             );
+                  //           },
+                  //         ),
+                  //       ),
+                  //       IconButton(
+                  //         icon: const Icon(Icons.close, color: Colors.white),
+                  //         onPressed: () {
+                  //           Navigator.of(context).pop();
+                  //         },
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
             ),

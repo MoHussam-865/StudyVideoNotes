@@ -1,17 +1,15 @@
-import 'package:video_notes/routes/routes.dart';
-import 'package:video_notes/ui/features/full_screen/full_video_view.dart';
-import '../../../data/models/timestamped_message.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:path/path.dart' as path;
+import 'package:video_notes/routes/routes.dart';
 import 'package:video_player/video_player.dart';
+import '../../../data/models/timestamped_message.dart';
 import '../../../data/models/timestamped_note.dart';
 
 class VideoNotesViewModel extends ChangeNotifier {
-
   List<TimestampedMessage> timestampedMessages = [];
   VideoPlayerController? videoController;
   Future<void>? initializeVideoFuture;
@@ -21,8 +19,7 @@ class VideoNotesViewModel extends ChangeNotifier {
   bool isEditorVisible = false;
   String? videoPath;
 
-
- /// Loads timestamped messages from a .txt file with the same name as the video.
+  /// Loads timestamped messages from a .txt file with the same name as the video.
   /// Returns true if loaded, false if file not found or error.
   Future<bool> _loadTimestampedMessagesForVideo(String videoPath) async {
     try {
@@ -50,7 +47,9 @@ class VideoNotesViewModel extends ChangeNotifier {
   Future<void> navigateToFullVideoView(BuildContext context) async {
     if (videoController == null) return;
     try {
-      final result = await Navigator.pushNamed(context, MyRouts.fullScreen.value) as Duration?;
+      final result =
+          await Navigator.pushNamed(context, MyRouts.fullScreen.value)
+              as Duration?;
       if (result != null) {
         // Pause video and open editor at this time
         await videoController!.pause();
@@ -149,7 +148,7 @@ class VideoNotesViewModel extends ChangeNotifier {
         context,
       ).showSnackBar(SnackBar(content: Text('Cannot open video: $e')));
       await controller.dispose();
-      videoController = null;
+      //videoController = null;
     }
   }
 

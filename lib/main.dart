@@ -6,16 +6,9 @@ import 'package:video_notes/routes/routes.dart';
 import 'core/di/app_model.dart';
 import 'package:provider/provider.dart';
 
-
 void main() {
-  runApp(MultiProvider(
-    // dependency injection
-    providers: AppModel.dependancies,
-
-    child: const MyApp(),
-  ),);
+  runApp(MultiProvider(providers: AppModel.setupLocator(), child: MyApp()));
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

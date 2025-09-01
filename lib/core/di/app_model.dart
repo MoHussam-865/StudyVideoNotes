@@ -1,20 +1,27 @@
-
-
-import 'package:video_notes/core/services/file_service.dart';
+import 'package:get_it/get_it.dart';
+import 'package:provider/single_child_widget.dart';
 import 'package:provider/provider.dart';
-
 import '../../ui/features/full_screen/full_video_view_model.dart';
 import '../../ui/features/main/video_notes_view_model.dart';
 
-
 class AppModel {
-  static var dependancies = [
-    Provider(create: (context) => FileService()),
-    ChangeNotifierProvider(
-      create: (context) => VideoNotesViewModel(),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => FullVideoViewModel(videoViewModel: context.read()),
-    ),
-  ];
+  static List<SingleChildWidget> setupLocator() {
+    final locator = GetIt.instance;
+
+    // Singleton: same instance for whole app
+
+    locator.registerLazySingleton<VideoNotesViewModel>(
+      () => VideoNotesViewModel(),
+    );
+
+    // Factory: new instance every time, but injected with same VideoNotesViewModel
+    locator.registerFactory(
+      () => FullVideoViewModel(vm: locator<VideoNotesViewModel>()),
+    );
+
+    return [
+      ChangeNotifierProvider(create: (_) => locator<VideoNotesViewModel>()),
+      ChangeNotifierProvider(create: (_) => locator<FullVideoViewModel>()),
+    ];
+  }
 }
