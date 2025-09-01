@@ -61,58 +61,6 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
                         },
                         refresh: () => setState(() {}),
                       ),
-                      // Positioned(
-                      //   bottom: 16,
-                      //   left: 16,
-                      //   right: 16,
-                      //   child: Row(
-                      //     children: <Widget>[
-                      //       IconButton(
-                      //         icon: Icon(
-                      //           c.value.isPlaying
-                      //               ? Icons.pause
-                      //               : Icons.play_arrow,
-                      //         ),
-                      //         onPressed: () {
-                      //           setState(() {
-                      //             if (c.value.isPlaying) {
-                      //               c.pause();
-                      //             } else {
-                      //               c.play();
-                      //             }
-                      //           });
-                      //         },
-                      //       ),
-                      //       Expanded(
-                      //         child: Slider(
-                      //           value: c.value.position.inMilliseconds
-                      //               .toDouble()
-                      //               .clamp(
-                      //                 0,
-                      //                 c.value.duration.inMilliseconds
-                      //                     .toDouble(),
-                      //               ),
-                      //           min: 0,
-                      //           max: c.value.duration.inMilliseconds.toDouble(),
-                      //           onChanged: (v) {
-                      //             c.seekTo(Duration(milliseconds: v.toInt()));
-                      //             setState(() {});
-                      //           },
-                      //         ),
-                      //       ),
-                      //       Text(
-                      //         '${_formatTime(c.value.position)} / ${_formatTime(c.value.duration)}',
-                      //       ),
-                      //       const SizedBox(width: 8),
-                      //       IconButton(
-                      //         tooltip: 'Fullscreen',
-                      //         icon: const Icon(Icons.fullscreen),
-                      //         onPressed: () =>
-                      //             vm.navigateToFullVideoView(context),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
                     ],
                   ),
                 );

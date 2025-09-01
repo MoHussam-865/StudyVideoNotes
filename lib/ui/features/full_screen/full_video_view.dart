@@ -107,53 +107,6 @@ class _FullVideoViewState extends State<FullVideoView> {
                     refresh: () => setState(() {}),
                     color: Colors.white,
                   ),
-                  // Positioned(
-                  //   bottom: 24,
-                  //   left: 24,
-                  //   right: 24,
-                  //   child: Row(
-                  //     children: [
-                  //       IconButton(
-                  //         icon: Icon(
-                  //           viewModel.isPlaying
-                  //               ? Icons.pause
-                  //               : Icons.play_arrow,
-                  //           color: Colors.white,
-                  //         ),
-                  //         onPressed: () {
-                  //           if (viewModel.isPlaying) {
-                  //             viewModel.pause();
-                  //           } else {
-                  //             viewModel.play();
-                  //           }
-                  //         },
-                  //       ),
-                  //       Expanded(
-                  //         child: Slider(
-                  //           value: viewModel.position.inMilliseconds
-                  //               .toDouble()
-                  //               .clamp(
-                  //                 0,
-                  //                 viewModel.duration.inMilliseconds.toDouble(),
-                  //               ),
-                  //           min: 0,
-                  //           max: viewModel.duration.inMilliseconds.toDouble(),
-                  //           onChanged: (v) {
-                  //             viewModel.seekTo(
-                  //               Duration(milliseconds: v.toInt()),
-                  //             );
-                  //           },
-                  //         ),
-                  //       ),
-                  //       IconButton(
-                  //         icon: const Icon(Icons.close, color: Colors.white),
-                  //         onPressed: () {
-                  //           Navigator.of(context).pop();
-                  //         },
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
                 ],
               ),
             ),
