@@ -34,7 +34,7 @@ Android Studio / VS Code with Flutter plugin
 Installation
 
 # Clone this repository
-git clone https://github.com/yourusername/video_notes_app.git
+git clone https://github.com/MoHussam-865/StudyVideoNotes 
 
 # Navigate into the project folder
 cd video_notes_app
