@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:video_notes/ui/features/main/video_notes_view_model.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../data/models/timestamped_message.dart';
+import '../../../data/interfaces/Player.dart';
+import '../../../data/models/time_title.dart';
 
 class FullVideoViewModel extends ChangeNotifier {
 
-  bool get isPlaying => videoController.value.isPlaying;
-  Duration get position => videoController.value.position;
-  Duration get duration => videoController.value.duration;
-  double get aspectRatio => videoController.value.aspectRatio;
+  bool get isPlaying => videoController.isPlaying;
+  Duration get position => videoController.position;
+  Duration get duration => videoController.duration;
+  double get aspectRatio => videoController.aspectRatio;
 
-  List<TimestampedMessage> get timestampedMessages => vm.timestampedMessages;
-  VideoPlayerController get videoController => vm.videoController!;
+  List<TimeTitle> get timestampedMessages => vm.timesTitle;
+  Player get videoController => vm.videoController!;
   final VideoNotesViewModel vm;
 
   FullVideoViewModel({required this.vm});

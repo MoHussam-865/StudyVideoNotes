@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../data/interfaces/Player.dart';
+import '../../../data/models/MyVideoPlayer.dart';
+import '../../../data/models/MyYoutubePlayer.dart';
 import '../../widgets/video_controls.dart';
 import 'full_video_view_model.dart';
 
 class FullVideoView extends StatefulWidget {
-
-
   const FullVideoView({super.key});
 
   @override
@@ -23,15 +25,11 @@ class _FullVideoViewState extends State<FullVideoView> {
 
     viewModel = context.read();
     viewModel.videoController.addListener(_onControllerUpdate);
-
   }
-
 
   void _addNoteAndBack() {
     Navigator.pop(context, viewModel.position);
   }
-
-
 
   @override
   void dispose() {
@@ -45,6 +43,7 @@ class _FullVideoViewState extends State<FullVideoView> {
 
   @override
   Widget build(BuildContext context) {
+    final c = viewModel.videoController;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -96,11 +95,16 @@ class _FullVideoViewState extends State<FullVideoView> {
                   Center(
                     child: AspectRatio(
                       aspectRatio: viewModel.aspectRatio,
-                      child: VideoPlayer(viewModel.videoController),
+                      child: (c is MyVideoPlayer)
+                          ? VideoPlayer((c).myController!)
+                          : YoutubePlayer(
+                              controller: (c as MyYoutubePlayer).myController!,
+                              showVideoProgressIndicator: true,
+                            ),
                     ),
                   ),
                   VideoControls(
-                    c: viewModel.videoController,
+                    c: c,
                     onFullScreenClicked: () {
                       Navigator.of(context).pop();
                     },

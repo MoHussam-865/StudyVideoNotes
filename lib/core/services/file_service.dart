@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import '../../data/models/timestamped_note.dart';
+import '../../data/models/time_note.dart';
 
 class FileService {
   const FileService();
@@ -18,7 +18,7 @@ class FileService {
 
   Future<void> saveNotesAsJson({
     required File videoFile,
-    required List<TimestampedNote> notes,
+    required List<TimeNote> notes,
   }) async {
     final File out = await getNotesJsonFileForVideo(videoFile);
     final List<Map<String, dynamic>> data = notes.map((n) => n.toJson()).toList(growable: false);
@@ -28,11 +28,11 @@ class FileService {
 
   Future<void> saveNotesAsTxt({
     required File videoFile,
-    required List<TimestampedNote> notes,
+    required List<TimeNote> notes,
   }) async {
     final File out = await getNotesTxtFileForVideo(videoFile);
     final StringBuffer buffer = StringBuffer();
-    for (final TimestampedNote n in notes) {
+    for (final TimeNote n in notes) {
       final Duration d = Duration(milliseconds: n.milliseconds);
       final String ts = _formatDuration(d);
       buffer.writeln('[$ts] ${n.plainText.trim()}');
@@ -40,15 +40,15 @@ class FileService {
     await out.writeAsString(buffer.toString());
   }
 
-  Future<List<TimestampedNote>> loadNotesFromJsonIfExists(File videoFile) async {
+  Future<List<TimeNote>> loadNotesFromJsonIfExists(File videoFile) async {
     final File f = await getNotesJsonFileForVideo(videoFile);
-    if (!await f.exists()) return <TimestampedNote>[];
+    if (!await f.exists()) return <TimeNote>[];
     final String contents = await f.readAsString();
     final dynamic decoded = jsonDecode(contents);
-    if (decoded is! List) return <TimestampedNote>[];
+    if (decoded is! List) return <TimeNote>[];
     return decoded
         .whereType<Map<String, dynamic>>()
-        .map<TimestampedNote>(TimestampedNote.fromJson)
+        .map<TimeNote>(TimeNote.fromJson)
         .toList(growable: true);
   }
 

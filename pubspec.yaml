@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   video_player: ^2.7.0
   video_player_win: ^3.2.0
+  youtube_player_flutter: ^9.1.2
   file_picker: ^10.3.2
   path_provider: ^2.1.1
   flutter_quill: 11.4.2

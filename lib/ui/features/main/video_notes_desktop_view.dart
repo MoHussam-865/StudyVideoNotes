@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:video_notes/data/models/MyVideoPlayer.dart';
+import 'package:video_notes/data/models/MyYoutubePlayer.dart';
 import 'package:video_notes/ui/widgets/video_controls.dart';
 import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../data/interfaces/Player.dart';
 import 'video_notes_view_model.dart';
-import '../../../data/models/timestamped_note.dart';
+import '../../../data/models/time_note.dart';
 
 class VideoNotesDesktopView extends StatefulWidget {
   final VideoNotesViewModel viewModel;
@@ -46,14 +50,19 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
                         child: Center(child: CircularProgressIndicator()),
                       );
                     }
-                    final VideoPlayerController c = vm.videoController!;
+                    final c = vm.videoController!;
                     return Expanded(
                       child: Stack(
                         children: <Widget>[
                           Center(
                             child: AspectRatio(
-                              aspectRatio: c.value.aspectRatio,
-                              child: VideoPlayer(c),
+                              aspectRatio: vm.videoController!.aspectRatio,
+                              child: (c is MyVideoPlayer)
+                                  ? VideoPlayer((c).myController!)
+                                  : YoutubePlayer(
+                                      controller: (c as MyYoutubePlayer).myController!,
+                                      showVideoProgressIndicator: true,
+                                    ),
                             ),
                           ),
                           VideoControls(
@@ -78,7 +87,7 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
                         onPressed: () async {
                           if (!vm.canAddNote()) return;
                           if (vm.videoController != null &&
-                              vm.videoController!.value.isPlaying) {
+                              vm.videoController!.isPlaying) {
                             await vm.videoController!.pause();
                           }
                           vm.ensureEditorVisibleForNewNote();
@@ -117,7 +126,7 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
                           onPressed: () async {
                             if (!vm.canAddNote()) return;
                             if (vm.videoController != null &&
-                                vm.videoController!.value.isPlaying) {
+                                vm.videoController!.isPlaying) {
                               await vm.videoController!.pause();
                             }
                             if (vm.selectedIndex == null) {
@@ -193,7 +202,7 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
                     if (index < 0 || index >= vm.notes.length) {
                       return const SizedBox.shrink();
                     }
-                    final TimestampedNote n = vm.notes[index];
+                    final TimeNote n = vm.notes[index];
                     final String title = n.plainText.split('\n').isNotEmpty
                         ? n.plainText.split('\n').first
                         : '';

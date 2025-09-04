@@ -1,7 +1,7 @@
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 
-class TimestampedNote {
-  TimestampedNote({
+class TimeNote {
+  TimeNote({
     required this.milliseconds,
     required this.document,
     DateTime? createdAt,
@@ -21,10 +21,10 @@ class TimestampedNote {
     };
   }
 
-  static TimestampedNote fromJson(Map<String, dynamic> json) {
+  static TimeNote fromJson(Map<String, dynamic> json) {
     final dynamic deltaJson = json['delta'];
     final quill.Document doc = quill.Document.fromJson(deltaJson as List<dynamic>);
-    return TimestampedNote(
+    return TimeNote(
       milliseconds: json['milliseconds'] as int,
       document: doc,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),

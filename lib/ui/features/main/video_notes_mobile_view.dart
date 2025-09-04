@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../data/interfaces/Player.dart';
+import '../../../data/models/MyVideoPlayer.dart';
+import '../../../data/models/MyYoutubePlayer.dart';
 import '../../widgets/video_controls.dart';
 import 'video_notes_view_model.dart';
-import '../../../data/models/timestamped_note.dart';
+import '../../../data/models/time_note.dart';
 
 class VideoNotesMobileView extends StatefulWidget {
   final VideoNotesViewModel viewModel;
+
   const VideoNotesMobileView({super.key, required this.viewModel});
 
   @override
@@ -38,19 +43,24 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
             FutureBuilder<void>(
               future: vm.initializeVideoFuture,
               builder: (context, snapshot) {
+                final c = vm.videoController!;
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const Expanded(
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                final VideoPlayerController c = vm.videoController!;
                 return Expanded(
                   child: Stack(
                     children: <Widget>[
                       Center(
                         child: AspectRatio(
-                          aspectRatio: c.value.aspectRatio,
-                          child: VideoPlayer(c),
+                          aspectRatio: vm.videoController!.aspectRatio,
+                          child: (c is MyVideoPlayer)
+                              ? VideoPlayer((c).myController!)
+                              : YoutubePlayer(
+                            controller: (c as MyYoutubePlayer).myController!,
+                            showVideoProgressIndicator: true,
+                          ),
                         ),
                       ),
                       VideoControls(
@@ -75,7 +85,7 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
                     onPressed: () async {
                       if (!vm.canAddNote()) return;
                       if (vm.videoController != null &&
-                          vm.videoController!.value.isPlaying) {
+                          vm.videoController!.isPlaying) {
                         await vm.videoController!.pause();
                       }
                       vm.ensureEditorVisibleForNewNote();
@@ -107,7 +117,7 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
             child: ListView.builder(
               itemCount: vm.notes.length,
               itemBuilder: (context, index) {
-                final TimestampedNote n = vm.notes[index];
+                final TimeNote n = vm.notes[index];
                 final String title = n.plainText.split('\n').isNotEmpty
                     ? n.plainText.split('\n').first
                     : '';
@@ -173,7 +183,7 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
                       onPressed: () async {
                         if (!vm.canAddNote()) return;
                         if (vm.videoController != null &&
-                            vm.videoController!.value.isPlaying) {
+                            vm.videoController!.isPlaying) {
                           await vm.videoController!.pause();
                         }
                         if (vm.selectedIndex == null) {

@@ -4,16 +4,19 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:path/path.dart' as path;
+import 'package:video_notes/data/models/MyVideoPlayer.dart';
+import 'package:video_notes/data/models/MyYoutubePlayer.dart';
 import 'package:video_notes/routes/routes.dart';
 import 'package:video_player/video_player.dart';
-import '../../../data/models/timestamped_message.dart';
-import '../../../data/models/timestamped_note.dart';
+import '../../../data/interfaces/Player.dart';
+import '../../../data/models/time_title.dart';
+import '../../../data/models/time_note.dart';
 
 class VideoNotesViewModel extends ChangeNotifier {
-  List<TimestampedMessage> timestampedMessages = [];
-  VideoPlayerController? videoController;
+  List<TimeTitle> timesTitle = [];
+  Player? videoController;
   Future<void>? initializeVideoFuture;
-  final List<TimestampedNote> notes = [];
+  final List<TimeNote> notes = [];
   int? selectedIndex;
   final quill.QuillController quillController = quill.QuillController.basic();
   bool isEditorVisible = false;
@@ -21,7 +24,7 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   /// Loads timestamped messages from a .txt file with the same name as the video.
   /// Returns true if loaded, false if file not found or error.
-  Future<bool> _loadTimestampedMessagesForVideo(String videoPath) async {
+  Future<bool> _loadTimesTitleForVideo(String videoPath) async {
     try {
       final videoFile = File(videoPath);
       final videoDir = videoFile.parent.path;
@@ -29,17 +32,17 @@ class VideoNotesViewModel extends ChangeNotifier {
       final txtPath = '$videoDir${Platform.pathSeparator}$videoName.txt';
       final txtFile = File(txtPath);
       if (!await txtFile.exists()) {
-        timestampedMessages = [];
+        timesTitle = [];
         return false;
       }
       final lines = await txtFile.readAsLines();
-      timestampedMessages = lines
+      timesTitle = lines
           .where((line) => line.trim().isNotEmpty)
-          .map((line) => TimestampedMessage.fromLine(line))
+          .map((line) => TimeTitle.fromLine(line))
           .toList();
       return true;
     } catch (e) {
-      timestampedMessages = [];
+      timesTitle = [];
       return false;
     }
   }
@@ -56,7 +59,6 @@ class VideoNotesViewModel extends ChangeNotifier {
         isEditorVisible = true;
         selectedIndex = null;
         quillController.document = quill.Document();
-        // Seek to the returned time
         await videoController!.seekTo(result);
         notifyListeners();
       }
@@ -72,14 +74,14 @@ class VideoNotesViewModel extends ChangeNotifier {
     );
 
     if (result != null && result.files.isNotEmpty) {
-      final file = File(result.files.first.path!);
-      final videoPath = file.absolute.path;
-      this.videoPath = videoPath;
+      final path = result.files.first.path!;
 
       // Try to load existing notes from JSON file with same name
+
+      await loadVideo(context, path);
+      final videoPath = this.videoPath ?? '';
       await _loadNotesFromJson(videoPath);
-      await _loadTimestampedMessagesForVideo(videoPath);
-      await loadVideo(context, file);
+      await _loadTimesTitleForVideo(videoPath);
     }
   }
 
@@ -95,9 +97,7 @@ class VideoNotesViewModel extends ChangeNotifier {
         final jsonString = await jsonFile.readAsString();
         final List<dynamic> jsonList = jsonDecode(jsonString);
         notes.clear();
-        notes.addAll(
-          jsonList.map((json) => TimestampedNote.fromJson(json)).toList(),
-        );
+        notes.addAll(jsonList.map((json) => TimeNote.fromJson(json)).toList());
         selectedIndex = null;
       } else {
         notes.clear();
@@ -129,26 +129,17 @@ class VideoNotesViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadVideo(BuildContext context, File file) async {
+  Future<void> loadVideo(BuildContext context, String file) async {
     await videoController?.dispose();
-    final VideoPlayerController controller = VideoPlayerController.file(file);
-    videoController = controller;
+    videoController = (MyVideoPlayer() as Player);
+
     try {
-      initializeVideoFuture = controller.initialize();
-      await initializeVideoFuture;
-      if (!controller.value.isInitialized) {
-        throw StateError(
-          controller.value.errorDescription ?? 'Failed to initialize video',
-        );
-      }
-      controller.addListener(() {});
-      await controller.play();
+      initializeVideoFuture = videoController!.start(file);
+      videoPath = videoController!.name;
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Cannot open video: $e')));
-      await controller.dispose();
-      //videoController = null;
     }
   }
 
@@ -167,8 +158,8 @@ class VideoNotesViewModel extends ChangeNotifier {
   bool addNoteAtCurrentTime(BuildContext context) {
     if (!canAddNote()) return false;
 
-    final currentTime = videoController!.value.position.inMilliseconds;
-    final note = TimestampedNote(
+    final currentTime = videoController!.currentTime;
+    final note = TimeNote(
       milliseconds: currentTime,
       document: quillController.document,
     );
@@ -196,7 +187,7 @@ class VideoNotesViewModel extends ChangeNotifier {
     if (index < 0 || index >= notes.length) return false;
 
     final note = notes[index];
-    final updatedNote = TimestampedNote(
+    final updatedNote = TimeNote(
       milliseconds: note.milliseconds,
       document: quillController.document,
       createdAt: note.createdAt,
@@ -241,7 +232,7 @@ class VideoNotesViewModel extends ChangeNotifier {
     if (videoController == null) return;
     if (index < 0 || index >= notes.length) return;
     final int noteMs = notes[index].milliseconds;
-    final int videoMs = videoController!.value.duration.inMilliseconds;
+    final int videoMs = videoController!.durationInMs;
     if (videoMs == 0) return;
     int seekMs = noteMs;
     if (noteMs < 0) seekMs = 0;
@@ -259,6 +250,7 @@ class VideoNotesViewModel extends ChangeNotifier {
     }
     try {
       await videoController!.seekTo(Duration(milliseconds: seekMs));
+      notifyListeners();
     } catch (e) {
       if (context != null) {
         ScaffoldMessenger.of(
@@ -298,5 +290,22 @@ class VideoNotesViewModel extends ChangeNotifier {
     videoController?.dispose();
     quillController.dispose();
     super.dispose();
+  }
+
+  Future<void> openVideoFromLink(BuildContext context, String link) async {
+    await videoController?.dispose();
+
+    videoController = (MyYoutubePlayer() as Player);
+
+    try {
+      initializeVideoFuture = videoController!.start(link);
+      videoPath = videoController!.name;
+      debugPrint('Video path: $videoPath');
+      notifyListeners();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Cannot open video: $e')));
+    }
   }
 }

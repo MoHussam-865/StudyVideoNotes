@@ -1,10 +1,10 @@
-class TimestampedMessage {
+class TimeTitle {
   final Duration time;
   final String message;
 
-  TimestampedMessage({required this.time, required this.message});
+  TimeTitle({required this.time, required this.message});
 
-  factory TimestampedMessage.fromLine(String line) {
+  factory TimeTitle.fromLine(String line) {
     // Supports HH:MM:SS or MM:SS
     final match = RegExp(
       r'^(?:(\d{2}):)?(\d{2}):(\d{2})\s+(.*)',
@@ -17,7 +17,7 @@ class TimestampedMessage {
     final minutes = int.parse(match.group(2)!);
     final seconds = int.parse(match.group(3)!);
     final message = match.group(4)!;
-    return TimestampedMessage(
+    return TimeTitle(
       time: Duration(hours: hours, minutes: minutes, seconds: seconds),
       message: message,
     );

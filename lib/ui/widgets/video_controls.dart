@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:video_notes/data/interfaces/Player.dart';
 
 class VideoControls extends StatelessWidget {
-  final VideoPlayerController c;
+  final Player c;
   final VoidCallback refresh;
   final VoidCallback onFullScreenClicked;
   final Color color;
@@ -34,11 +34,11 @@ class VideoControls extends StatelessWidget {
         children: <Widget>[
           IconButton(
             icon: Icon(
-              c.value.isPlaying ? Icons.pause : Icons.play_arrow,
+              c.isPlaying ? Icons.pause : Icons.play_arrow,
               color: color,
             ),
             onPressed: () {
-              if (c.value.isPlaying) {
+              if (c.isPlaying) {
                 c.pause();
               } else {
                 c.play();
@@ -48,12 +48,12 @@ class VideoControls extends StatelessWidget {
           ),
           Expanded(
             child: Slider(
-              value: c.value.position.inMilliseconds.toDouble().clamp(
+              value: c.position.inMilliseconds.toDouble().clamp(
                 0,
-                c.value.duration.inMilliseconds.toDouble(),
+                c.duration.inMilliseconds.toDouble(),
               ),
               min: 0,
-              max: c.value.duration.inMilliseconds.toDouble(),
+              max: c.duration.inMilliseconds.toDouble(),
               onChanged: (v) {
                 c.seekTo(Duration(milliseconds: v.toInt()));
                 refresh();
@@ -61,7 +61,7 @@ class VideoControls extends StatelessWidget {
             ),
           ),
           Text(
-            '${_formatTime(c.value.position)} / ${_formatTime(c.value.duration)}',
+            '${_formatTime(c.position)} / ${_formatTime(c.duration)}',
           ),
           const SizedBox(width: 8),
           IconButton(
