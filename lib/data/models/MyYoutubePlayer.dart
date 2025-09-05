@@ -1,103 +1,103 @@
-
-
-import 'dart:ui';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../interfaces/Player.dart';
-
-class MyYoutubePlayer extends Player {
-
-  String url = '';
-  YoutubePlayerController? videoController;
-
-  YoutubePlayerController? get myController => videoController;
-
-  @override
-  double get aspectRatio => 16 / 9;
-  @override
-  int get currentTime => videoController?.value.position.inMilliseconds ?? 0;
-  @override
-  int get durationInMs => videoController?.metadata.duration.inMilliseconds ?? 0;
-  @override
-  Duration get duration => videoController?.metadata.duration ?? Duration();
-  @override
-  bool get isPlaying => videoController?.value.isPlaying ?? false;
-  @override
-  Duration get position => videoController?.value.position ?? Duration();
-
-  @override
-  Future<void> pause() async {
-    videoController?.pause();
-  }
-
-  @override
-  Future<void> play() async {
-    videoController?.play();
-  }
-
-  @override
-  Future<void> seekTo(Duration position) async {
-    videoController?.seekTo(position);
-  }
-
-  @override
-  Future<void> dispose() async {
-    videoController?.dispose();
-  }
-
-  @override
-  void addListener(VoidCallback onControllerUpdate) {
-    videoController?.addListener(onControllerUpdate);
-  }
-
-  @override
-  void removeListener(VoidCallback onControllerUpdate) {
-    videoController?.removeListener(onControllerUpdate);
-  }
-
-  @override
-  String get name => url;
-
-
-  @override
-  Future<void> start(String url) async {
-    final id = getYoutubeId(url);
-
-    videoController = YoutubePlayerController(
-      initialVideoId: id,
-      flags: YoutubePlayerFlags(
-        autoPlay: false, // Changed from true to false
-        mute: false,
-      ),
-    );
-
-    videoController!.addListener(_playListener);
-    
-    this.url = url;
-    return Future.value();
-  }
-
-  void _playListener() {
-    if (videoController != null &&
-        videoController!.value.isReady &&
-        (videoController!.value.playerState == PlayerState.cued || videoController!.value.playerState == PlayerState.buffering)) {
-      videoController!.play();
-      // Important: Remove the listener after calling play to avoid multiple calls
-      videoController!.removeListener(_playListener);
-    }
-  }
-
-
-  String getYoutubeId(String url) {
-    final regExp = RegExp(
-      r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",
-      caseSensitive: false,
-      multiLine: false,
-    );
-    final match = regExp.firstMatch(url);
-    return match != null ? match.group(1)! : "";
-  }
-
-  @override
-  get controller => videoController;
-
-}
+//
+//
+// import 'dart:ui';
+// import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+// import '../interfaces/MyPlayer.dart';
+//
+// class MyYoutubePlayer extends MyPlayer {
+//
+//   String url = '';
+//   YoutubePlayerController? videoController;
+//
+//   YoutubePlayerController? get myController => videoController;
+//
+//   @override
+//   double get aspectRatio => 16 / 9;
+//   @override
+//   int get currentTime => videoController?.value.position.inMilliseconds ?? 0;
+//   @override
+//   int get durationInMs => videoController?.metadata.duration.inMilliseconds ?? 0;
+//   @override
+//   Duration get duration => videoController?.metadata.duration ?? Duration();
+//   @override
+//   bool get isPlaying => videoController?.value.isPlaying ?? false;
+//   @override
+//   Duration get position => videoController?.value.position ?? Duration();
+//
+//   @override
+//   Future<void> pause() async {
+//     videoController?.pause();
+//   }
+//
+//   @override
+//   Future<void> play() async {
+//     videoController?.play();
+//   }
+//
+//   @override
+//   Future<void> seekTo(Duration position) async {
+//     videoController?.seekTo(position);
+//   }
+//
+//   @override
+//   Future<void> dispose() async {
+//     videoController?.dispose();
+//   }
+//
+//   @override
+//   void addListener(VoidCallback onControllerUpdate) {
+//     videoController?.addListener(onControllerUpdate);
+//   }
+//
+//   @override
+//   void removeListener(VoidCallback onControllerUpdate) {
+//     videoController?.removeListener(onControllerUpdate);
+//   }
+//
+//   @override
+//   String get name => url;
+//
+//
+//   @override
+//   Future<void> start(String url) async {
+//     final id = getYoutubeId(url);
+//
+//     videoController = YoutubePlayerController(
+//       initialVideoId: id,
+//       flags: YoutubePlayerFlags(
+//         autoPlay: false, // Changed from true to false
+//         mute: false,
+//       ),
+//     );
+//
+//     videoController!.addListener(_playListener);
+//
+//     this.url = url;
+//     return Future.value();
+//   }
+//
+//   void _playListener() {
+//     if (videoController != null &&
+//         videoController!.value.isReady &&
+//         (videoController!.value.playerState == PlayerState.cued || videoController!.value.playerState == PlayerState.buffering)) {
+//       videoController!.play();
+//       // Important: Remove the listener after calling play to avoid multiple calls
+//       videoController!.removeListener(_playListener);
+//     }
+//   }
+//
+//
+//   String getYoutubeId(String url) {
+//     final regExp = RegExp(
+//       r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",
+//       caseSensitive: false,
+//       multiLine: false,
+//     );
+//     final match = regExp.firstMatch(url);
+//     return match != null ? match.group(1)! : "";
+//   }
+//
+//   @override
+//   get zController => videoController;
+//
+// }

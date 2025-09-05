@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../../data/interfaces/Player.dart';
-import '../../../data/models/MyVideoPlayer.dart';
-import '../../../data/models/MyYoutubePlayer.dart';
-import '../../widgets/video_controls.dart';
+import 'package:video_notes/ui/widgets/VideoView.dart';
+
 import 'full_video_view_model.dart';
 
 class FullVideoView extends StatefulWidget {
@@ -21,10 +17,8 @@ class _FullVideoViewState extends State<FullVideoView> {
 
   @override
   void initState() {
-    super.initState();
-
     viewModel = context.read();
-    viewModel.videoController.addListener(_onControllerUpdate);
+    super.initState();
   }
 
   void _addNoteAndBack() {
@@ -33,24 +27,18 @@ class _FullVideoViewState extends State<FullVideoView> {
 
   @override
   void dispose() {
-    viewModel.videoController.removeListener(_onControllerUpdate);
+    viewModel.videoController.dispose();
     super.dispose();
-  }
-
-  void _onControllerUpdate() {
-    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = viewModel.videoController;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Row(
           children: [
             Expanded(
-              flex: 5,
               child: Stack(
                 children: [
                   Positioned(
@@ -93,23 +81,55 @@ class _FullVideoViewState extends State<FullVideoView> {
                     ),
                   ),
                   Center(
-                    child: AspectRatio(
-                      aspectRatio: viewModel.aspectRatio,
-                      child: (c is MyVideoPlayer)
-                          ? VideoPlayer((c).myController!)
-                          : YoutubePlayer(
-                              controller: (c as MyYoutubePlayer).myController!,
-                              showVideoProgressIndicator: true,
-                            ),
+                    child: VideoView(
+                      vm: viewModel.vm,
+                      refresh: () {
+                        setState(() {});
+                      },
+                      onFullScreenClicked: () async {
+                        Navigator.of(context).pop();
+                        setState(() {});
+                      },
                     ),
                   ),
-                  VideoControls(
-                    c: c,
-                    onFullScreenClicked: () {
-                      Navigator.of(context).pop();
-                    },
-                    refresh: () => setState(() {}),
-                    color: Colors.white,
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Row(
+                      children: [
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black.withOpacity(0.7),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text('Add Note'),
+                          onPressed: _addNoteAndBack,
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black.withOpacity(0.7),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          icon: Icon(_showList ? Icons.close : Icons.list),
+                          label: Text(_showList ? 'Hide List' : 'Show List'),
+                          onPressed: () {
+                            setState(() {
+                              _showList = !_showList;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

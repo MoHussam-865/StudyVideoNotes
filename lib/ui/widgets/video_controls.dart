@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:video_notes/data/interfaces/Player.dart';
+import 'package:video_notes/data/interfaces/MyPlayer.dart';
 
 class VideoControls extends StatelessWidget {
-  final Player c;
+  final MyPlayer c;
   final VoidCallback refresh;
   final VoidCallback onFullScreenClicked;
   final Color color;
@@ -12,7 +12,7 @@ class VideoControls extends StatelessWidget {
     required this.c,
     required this.onFullScreenClicked,
     required this.refresh,
-    this.color = Colors.black,
+    this.color = Colors.white,
   });
 
   String _formatTime(Duration d) {
@@ -62,6 +62,7 @@ class VideoControls extends StatelessWidget {
           ),
           Text(
             '${_formatTime(c.position)} / ${_formatTime(c.duration)}',
+            style: TextStyle(color: color),
           ),
           const SizedBox(width: 8),
           IconButton(

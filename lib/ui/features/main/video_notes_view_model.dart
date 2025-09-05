@@ -5,22 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:path/path.dart' as path;
 import 'package:video_notes/data/models/MyVideoPlayer.dart';
-import 'package:video_notes/data/models/MyYoutubePlayer.dart';
 import 'package:video_notes/routes/routes.dart';
-import 'package:video_player/video_player.dart';
-import '../../../data/interfaces/Player.dart';
+import '../../../data/interfaces/MyPlayer.dart';
 import '../../../data/models/time_title.dart';
 import '../../../data/models/time_note.dart';
 
 class VideoNotesViewModel extends ChangeNotifier {
   List<TimeTitle> timesTitle = [];
-  Player? videoController;
-  Future<void>? initializeVideoFuture;
+  MyVideoPlayer? videoController;
   final List<TimeNote> notes = [];
   int? selectedIndex;
   final quill.QuillController quillController = quill.QuillController.basic();
   bool isEditorVisible = false;
+  bool isLoading = false;
   String? videoPath;
+
+  void setIsLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
 
   /// Loads timestamped messages from a .txt file with the same name as the video.
   /// Returns true if loaded, false if file not found or error.
@@ -67,11 +70,78 @@ class VideoNotesViewModel extends ChangeNotifier {
     }
   }
 
+
+  // Future<void> navigateToFullVideoView(BuildContext context) async {
+  //   // CRITICAL CHECK: Ensure player is initialized and ready
+  //   if (videoController == null || !videoController!.isPlaying) {
+  //     debugPrint("Video not ready for full screen.");
+  //     // Optionally show a message to the user
+  //     // ScaffoldMessenger.of(context).showSnackBar(
+  //     //   const SnackBar(content: Text("Video is not ready yet.")),
+  //     // );
+  //     return;
+  //   }
+  //
+  //   // It's also good practice to ensure the video has a valid duration,
+  //   // indicating it's properly loaded.
+  //   if (videoController!.duration <= Duration.zero) {
+  //     debugPrint("Video duration not available yet.");
+  //     return;
+  //   }
+  //
+  //   try {
+  //     // If you intend to pass the current position to the full-screen view
+  //     // so it can potentially seek or display it, you can get it here.
+  //     final currentPosition = videoController!.position;
+  //
+  //     // Pause the main view's player before navigating
+  //     await videoController!.pause();
+  //     notifyListeners(); // Update UI if needed after pausing
+  //
+  //     final result = await Navigator.pushNamed(
+  //       context,
+  //       MyRouts.fullScreen.value,
+  //       // If FullVideoViewModel needs the start position, pass it as an argument.
+  //       // arguments: currentPosition,
+  //     );
+  //
+  //     // When returning from full screen:
+  //     // The 'result' could be a Duration if you pop with a value from full screen.
+  //     if (result is Duration) {
+  //       // Example: Resume at the position returned from full screen
+  //       await videoController!.seekTo(result);
+  //       await videoController!.play(); // Or just leave it paused based on your desired UX
+  //       isEditorVisible = true; // Your existing logic
+  //       selectedIndex = null;
+  //       quillController.document = quill.Document(); // Your existing logic
+  //       notifyListeners();
+  //     } else {
+  //       // Default behavior if no specific result is returned,
+  //       // e.g., resume playback or stay paused.
+  //       // If the player was playing before, you might want to resume it.
+  //       // Consider saving the player's playing state before navigating.
+  //       await videoController!.play(); // Or conditionally play
+  //       notifyListeners();
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Error navigating to full screen or returning: $e');
+  //     // Potentially resume player if an error occurs during navigation
+  //     if (videoController != null && videoController!.isPlaying) {
+  //       await videoController!.play();
+  //       notifyListeners();
+  //     }
+  //   }
+  // }
+
+
   Future<void> pickAndOpenVideo(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: <String>['mp4', 'm4v', 'mov', 'wmv', 'ts', 'webm'],
     );
+
+    setIsLoading(true);
+    debugPrint('loading...');
 
     if (result != null && result.files.isNotEmpty) {
       final path = result.files.first.path!;
@@ -83,6 +153,7 @@ class VideoNotesViewModel extends ChangeNotifier {
       await _loadNotesFromJson(videoPath);
       await _loadTimesTitleForVideo(videoPath);
     }
+    setIsLoading(false);
   }
 
   Future<void> _loadNotesFromJson(String videoPath) async {
@@ -131,10 +202,11 @@ class VideoNotesViewModel extends ChangeNotifier {
 
   Future<void> loadVideo(BuildContext context, String file) async {
     await videoController?.dispose();
-    videoController = (MyVideoPlayer() as Player);
+    videoController = MyVideoPlayer();
+    //notifyListeners();
 
     try {
-      initializeVideoFuture = videoController!.start(file);
+      await videoController!.start(file);
       videoPath = videoController!.name;
     } catch (e) {
       ScaffoldMessenger.of(
@@ -276,7 +348,6 @@ class VideoNotesViewModel extends ChangeNotifier {
   void closeVideoAndReset() {
     videoController?.dispose();
     videoController = null;
-    initializeVideoFuture = null;
     notes.clear();
     selectedIndex = null;
     videoPath = null;
@@ -293,22 +364,19 @@ class VideoNotesViewModel extends ChangeNotifier {
   }
 
   Future<void> openVideoFromLink(BuildContext context, String link) async {
-    await videoController?.dispose();
 
-    videoController = (MyYoutubePlayer() as Player);
-
+    setIsLoading(true);
+    debugPrint('loading...1');
     try {
-      // Assign the Future directly
-      initializeVideoFuture = videoController!.start(link); 
-      // Wait for the future to complete before proceeding
-      await initializeVideoFuture; 
-      videoPath = videoController!.name;
-      debugPrint('Video path: $videoPath');
-      notifyListeners();
+      await loadVideo(context, link);
+      final videoPath = this.videoPath ?? '';
+      await _loadNotesFromJson(videoPath);
+      await _loadTimesTitleForVideo(videoPath);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Cannot open video: $e')));
     }
+    setIsLoading(false);
   }
 }

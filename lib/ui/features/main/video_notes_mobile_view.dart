@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:video_player/video_player.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../../data/interfaces/Player.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+
 import '../../../data/models/MyVideoPlayer.dart';
-import '../../../data/models/MyYoutubePlayer.dart';
+import '../../../data/models/time_note.dart';
+import '../../widgets/VideoView.dart';
 import '../../widgets/video_controls.dart';
 import 'video_notes_view_model.dart';
-import '../../../data/models/time_note.dart';
 
 class VideoNotesMobileView extends StatefulWidget {
   final VideoNotesViewModel viewModel;
@@ -33,49 +32,20 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
   @override
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
+    final controller = vm.videoController?.controller;
     final List<Widget> pages = [
       // Video Page
       Column(
         children: <Widget>[
-          if (vm.videoController == null)
-            const Expanded(child: Center(child: Text('Open a video to begin')))
-          else
-            FutureBuilder<void>(
-              future: vm.initializeVideoFuture,
-              builder: (context, snapshot) {
-                final c = vm.videoController!;
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const Expanded(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                return Expanded(
-                  child: Stack(
-                    children: <Widget>[
-                      Center(
-                        child: AspectRatio(
-                          aspectRatio: vm.videoController!.aspectRatio,
-                          child: (c is MyVideoPlayer)
-                              ? VideoPlayer((c).myController!)
-                              : YoutubePlayer(
-                            controller: (c as MyYoutubePlayer).myController!,
-                            showVideoProgressIndicator: true,
-                          ),
-                        ),
-                      ),
-                      VideoControls(
-                        c: c,
-                        onFullScreenClicked: () async {
-                          await vm.navigateToFullVideoView(context);
-                          setState(() {});
-                        },
-                        refresh: () => setState(() {}),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+          VideoView(
+            vm: vm,
+            refresh: () {
+              setState(() {});
+            },
+            onFullScreenClicked: () async {
+              await vm.navigateToFullVideoView(context);
+            },
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
