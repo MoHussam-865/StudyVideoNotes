@@ -1,16 +1,65 @@
-# video_notes
+📺 Video Notes App
 
-A new Flutter project.
+A Flutter app that allows users to watch videos, pause at any moment, and add notes linked to the current timestamp.
+It also supports YouTube-like chapters (sections), letting you divide the video into labeled parts for quick navigation.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+✨ Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+▶️ Video Playback – Play, pause, and seek within videos.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+📝 Notes with Timestamps – Pause the video and save a note tied to the exact playback time.
+
+📌 Chapters (Sections) – Organize the video into labeled chapters (e.g., Introduction, Part 1, Conclusion).
+
+🔖 Quick Navigation – Tap a note or chapter to jump instantly to that part of the video.
+
+💾 Persistent Storage – Notes and chapters are stored locally in json file that has the same name as the video so the notes are not removed when the video is deleted.
+
+---
+
+🚀 Getting Started
+
+Prerequisites
+
+Flutter SDK installed (version >= 3.x)
+
+Dart >= 2.17
+
+Android Studio / VS Code with Flutter plugin
+
+
+Installation
+
+# Clone this repository
+git clone https://github.com/MoHussam-865/StudyVideoNotes 
+
+# Navigate into the project folder
+cd video_notes_app
+
+# Get dependencies
+flutter pub get
+
+# Run the app
+flutter run
+
+
+---
+
+🏗️ Project Structure follows the MVVM pattern and uses dependncy injection to achieve separation of conserns 
+
+
+---
+
+⚡ Tech Stack
+
+Flutter (cross-platform UI framework)
+
+Provider (state management with MVVM)
+
+video_player (video playback)
+
+
+flutter_quill
