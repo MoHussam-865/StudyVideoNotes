@@ -33,14 +33,16 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
           flex: 4,
           child: Column(
             children: <Widget>[
-              VideoView(
-                vm: vm,
-                refresh: () {
-                  setState(() {});
-                },
-                onFullScreenClicked: () async {
-                  await vm.navigateToFullVideoView(context);
-                },
+              Expanded(
+                child: VideoView(
+                  vm: vm,
+                  refresh: () {
+                    setState(() {});
+                  },
+                  onFullScreenClicked: () async {
+                    await vm.navigateToFullVideoView(context);
+                  },
+                ),
               ),
               if (!vm.isEditorVisible)
                 Padding(

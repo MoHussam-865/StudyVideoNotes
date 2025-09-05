@@ -37,14 +37,16 @@ class _VideoNotesMobileViewState extends State<VideoNotesMobileView> {
       // Video Page
       Column(
         children: <Widget>[
-          VideoView(
-            vm: vm,
-            refresh: () {
-              setState(() {});
-            },
-            onFullScreenClicked: () async {
-              await vm.navigateToFullVideoView(context);
-            },
+          Expanded(
+            child: VideoView(
+              vm: vm,
+              refresh: () {
+                setState(() {});
+              },
+              onFullScreenClicked: () async {
+                await vm.navigateToFullVideoView(context);
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),

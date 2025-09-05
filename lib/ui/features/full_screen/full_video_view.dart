@@ -26,12 +26,6 @@ class _FullVideoViewState extends State<FullVideoView> {
   }
 
   @override
-  void dispose() {
-    viewModel.videoController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
@@ -41,46 +35,7 @@ class _FullVideoViewState extends State<FullVideoView> {
             Expanded(
               child: Stack(
                 children: [
-                  Positioned(
-                    top: 16,
-                    left: 16,
-                    child: Row(
-                      children: [
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black.withOpacity(0.7),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                          ),
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Add Note'),
-                          onPressed: _addNoteAndBack,
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black.withOpacity(0.7),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                          ),
-                          icon: Icon(_showList ? Icons.close : Icons.list),
-                          label: Text(_showList ? 'Hide List' : 'Show List'),
-                          onPressed: () {
-                            setState(() {
-                              _showList = !_showList;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Center(
+                  SizedBox.expand(
                     child: VideoView(
                       vm: viewModel.vm,
                       refresh: () {

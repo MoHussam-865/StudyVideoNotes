@@ -8,7 +8,7 @@ import '../features/main/video_notes_view_model.dart';
 class VideoView extends StatelessWidget {
   final VideoNotesViewModel vm;
   final VoidCallback refresh;
-  final VoidCallback onFullScreenClicked;
+  final Future<void> Function() onFullScreenClicked;
 
   const VideoView({
     super.key,
@@ -20,23 +20,22 @@ class VideoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = vm.videoController?.controller;
-    return Expanded(
-      child: Container(
-        child: (vm.videoController == null && !vm.isLoading)
-            ? Center(child: Text('Open a video to begin'))
-            : (vm.isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : Stack(
-                    children: <Widget>[
-                      if (controller != null)
-                        Center(
+    return (vm.videoController == null && !vm.isLoading)
+        ? Center(child: Text('Open a video to begin'))
+        : (vm.isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Stack(
+                  children: <Widget>[
+                    if (controller != null)
+                      SizedBox.expand(
+                        child: Center(
                           child: Video(
                             controller: controller,
                             controls: (state) {
                               return VideoControls(
                                 c: vm.videoController!,
                                 onFullScreenClicked: () async {
-                                  onFullScreenClicked();
+                                  await onFullScreenClicked();
                                   refresh();
                                 },
                                 refresh: refresh,
@@ -44,9 +43,8 @@ class VideoView extends StatelessWidget {
                             },
                           ),
                         ),
-                    ],
-                  )),
-      ),
-    );
+                      ),
+                  ],
+                ));
   }
 }

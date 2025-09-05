@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:video_notes/data/interfaces/MyPlayer.dart';
+import 'package:video_notes/data/models/MyVideoPlayer.dart';
 
-class VideoControls extends StatelessWidget {
-  final MyPlayer c;
+class VideoControls extends StatefulWidget {
+  final MyVideoPlayer c;
   final VoidCallback refresh;
   final VoidCallback onFullScreenClicked;
   final Color color;
@@ -15,6 +18,15 @@ class VideoControls extends StatelessWidget {
     this.color = Colors.white,
   });
 
+  @override
+  State<VideoControls> createState() => _VideoControlsState();
+}
+
+class _VideoControlsState extends State<VideoControls> {
+  late Timer _timer;
+  String time = '';
+  late final controller = widget.c;
+
   String _formatTime(Duration d) {
     String two(int v) => v.toString().padLeft(2, '0');
     final int h = d.inHours;
@@ -25,53 +37,72 @@ class VideoControls extends StatelessWidget {
   }
 
   @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    _timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+      if (mounted) {
+        setState(() {
+          time = _formatTime(widget.c.position);
+        });
+      }
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Positioned(
-      bottom: 16,
-      left: 16,
-      right: 16,
-      child: Row(
-        children: <Widget>[
-          IconButton(
-            icon: Icon(
-              c.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: color,
-            ),
-            onPressed: () {
-              if (c.isPlaying) {
-                c.pause();
-              } else {
-                c.play();
-              }
-              refresh();
-            },
-          ),
-          Expanded(
-            child: Slider(
-              value: c.position.inMilliseconds.toDouble().clamp(
-                0,
-                c.duration.inMilliseconds.toDouble(),
+    return Stack(
+      children: [
+        Positioned(
+          bottom: 16,
+          left: 16,
+          right: 16,
+          child: Row(
+            children: <Widget>[
+              IconButton(
+                icon: Icon(
+                  widget.c.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: widget.color,
+                ),
+                onPressed: () {
+                  if (widget.c.isPlaying) {
+                    widget.c.pause();
+                  } else {
+                    widget.c.play();
+                  }
+                  widget.refresh();
+                },
               ),
-              min: 0,
-              max: c.duration.inMilliseconds.toDouble(),
-              onChanged: (v) {
-                c.seekTo(Duration(milliseconds: v.toInt()));
-                refresh();
-              },
-            ),
+              Expanded(
+                child: Slider(
+                  value: widget.c.position.inMilliseconds.toDouble().clamp(
+                    0,
+                    widget.c.duration.inMilliseconds.toDouble(),
+                  ),
+                  min: 0,
+                  max: widget.c.duration.inMilliseconds.toDouble(),
+                  onChanged: (v) {
+                    widget.c.seekTo(Duration(milliseconds: v.toInt()));
+                    widget.refresh();
+                  },
+                ),
+              ),
+              Text(time, style: TextStyle(color: widget.color)),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Fullscreen',
+                icon: Icon(Icons.fullscreen, color: widget.color),
+                onPressed: widget.onFullScreenClicked,
+              ),
+            ],
           ),
-          Text(
-            '${_formatTime(c.position)} / ${_formatTime(c.duration)}',
-            style: TextStyle(color: color),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Fullscreen',
-            icon: Icon(Icons.fullscreen, color: color),
-            onPressed: onFullScreenClicked,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

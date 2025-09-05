@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:path/path.dart' as path;
 import 'package:video_notes/data/models/MyVideoPlayer.dart';
 import 'package:video_notes/routes/routes.dart';
-import '../../../data/interfaces/MyPlayer.dart';
-import '../../../data/models/time_title.dart';
+
 import '../../../data/models/time_note.dart';
+import '../../../data/models/time_title.dart';
 
 class VideoNotesViewModel extends ChangeNotifier {
   List<TimeTitle> timesTitle = [];
@@ -58,6 +59,7 @@ class VideoNotesViewModel extends ChangeNotifier {
               as Duration?;
       if (result != null) {
         // Pause video and open editor at this time
+        debugPrint('opening note at $result');
         await videoController!.pause();
         isEditorVisible = true;
         selectedIndex = null;
@@ -69,70 +71,6 @@ class VideoNotesViewModel extends ChangeNotifier {
       debugPrint('Error getting duration $e');
     }
   }
-
-
-  // Future<void> navigateToFullVideoView(BuildContext context) async {
-  //   // CRITICAL CHECK: Ensure player is initialized and ready
-  //   if (videoController == null || !videoController!.isPlaying) {
-  //     debugPrint("Video not ready for full screen.");
-  //     // Optionally show a message to the user
-  //     // ScaffoldMessenger.of(context).showSnackBar(
-  //     //   const SnackBar(content: Text("Video is not ready yet.")),
-  //     // );
-  //     return;
-  //   }
-  //
-  //   // It's also good practice to ensure the video has a valid duration,
-  //   // indicating it's properly loaded.
-  //   if (videoController!.duration <= Duration.zero) {
-  //     debugPrint("Video duration not available yet.");
-  //     return;
-  //   }
-  //
-  //   try {
-  //     // If you intend to pass the current position to the full-screen view
-  //     // so it can potentially seek or display it, you can get it here.
-  //     final currentPosition = videoController!.position;
-  //
-  //     // Pause the main view's player before navigating
-  //     await videoController!.pause();
-  //     notifyListeners(); // Update UI if needed after pausing
-  //
-  //     final result = await Navigator.pushNamed(
-  //       context,
-  //       MyRouts.fullScreen.value,
-  //       // If FullVideoViewModel needs the start position, pass it as an argument.
-  //       // arguments: currentPosition,
-  //     );
-  //
-  //     // When returning from full screen:
-  //     // The 'result' could be a Duration if you pop with a value from full screen.
-  //     if (result is Duration) {
-  //       // Example: Resume at the position returned from full screen
-  //       await videoController!.seekTo(result);
-  //       await videoController!.play(); // Or just leave it paused based on your desired UX
-  //       isEditorVisible = true; // Your existing logic
-  //       selectedIndex = null;
-  //       quillController.document = quill.Document(); // Your existing logic
-  //       notifyListeners();
-  //     } else {
-  //       // Default behavior if no specific result is returned,
-  //       // e.g., resume playback or stay paused.
-  //       // If the player was playing before, you might want to resume it.
-  //       // Consider saving the player's playing state before navigating.
-  //       await videoController!.play(); // Or conditionally play
-  //       notifyListeners();
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Error navigating to full screen or returning: $e');
-  //     // Potentially resume player if an error occurs during navigation
-  //     if (videoController != null && videoController!.isPlaying) {
-  //       await videoController!.play();
-  //       notifyListeners();
-  //     }
-  //   }
-  // }
-
 
   Future<void> pickAndOpenVideo(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
@@ -247,6 +185,7 @@ class VideoNotesViewModel extends ChangeNotifier {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Note added.')));
+    notifyListeners();
     return true;
   }
 
@@ -276,6 +215,7 @@ class VideoNotesViewModel extends ChangeNotifier {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Note updated.')));
+    notifyListeners();
     return true;
   }
 
@@ -364,7 +304,6 @@ class VideoNotesViewModel extends ChangeNotifier {
   }
 
   Future<void> openVideoFromLink(BuildContext context, String link) async {
-
     setIsLoading(true);
     debugPrint('loading...1');
     try {
