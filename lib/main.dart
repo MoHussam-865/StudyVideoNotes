@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         Locale('en'),
         Locale('ar'),
       ],
-      initialRoute: MyRouts.home.value,
+      initialRoute: MyRouts.test.value,
       routes: AppRoutes.routes,
     );
   }

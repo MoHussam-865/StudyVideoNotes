@@ -4,10 +4,11 @@ import 'package:video_notes/data/models/MyVideoPlayer.dart';
 import 'package:video_notes/data/models/MyYoutubePlayer.dart';
 import 'package:video_notes/ui/widgets/video_controls.dart';
 import 'package:video_player/video_player.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../../data/interfaces/Player.dart';
-import 'video_notes_view_model.dart';
+
 import '../../../data/models/time_note.dart';
+import 'video_notes_view_model.dart';
 
 class VideoNotesDesktopView extends StatefulWidget {
   final VideoNotesViewModel viewModel;
@@ -31,6 +32,7 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
   @override
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
+
     return Row(
       children: <Widget>[
         Expanded(
@@ -45,12 +47,13 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
                 FutureBuilder<void>(
                   future: vm.initializeVideoFuture,
                   builder: (context, snapshot) {
+                    final c = vm.videoController!;
+
                     if (snapshot.connectionState != ConnectionState.done) {
                       return const Expanded(
                         child: Center(child: CircularProgressIndicator()),
                       );
                     }
-                    final c = vm.videoController!;
                     return Expanded(
                       child: Stack(
                         children: <Widget>[
@@ -60,8 +63,13 @@ class _VideoNotesDesktopViewState extends State<VideoNotesDesktopView> {
                               child: (c is MyVideoPlayer)
                                   ? VideoPlayer((c).myController!)
                                   : YoutubePlayer(
-                                      controller: (c as MyYoutubePlayer).myController!,
+                                      controller:
+                                          (c as MyYoutubePlayer).myController!,
                                       showVideoProgressIndicator: true,
+                                      onReady: () {
+                                        debugPrint("Player is ready");
+                                        //c.play();
+                                      },
                                     ),
                             ),
                           ),

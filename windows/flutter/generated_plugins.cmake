@@ -5,8 +5,10 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   flutter_inappwebview_windows
+  media_kit_video
   url_launcher_windows
   video_player_win
+  volume_controller
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

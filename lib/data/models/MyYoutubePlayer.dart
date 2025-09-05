@@ -59,19 +59,31 @@ class MyYoutubePlayer extends Player {
 
 
   @override
-  Future start(String url) async {
-
+  Future<void> start(String url) async {
     final id = getYoutubeId(url);
 
     videoController = YoutubePlayerController(
       initialVideoId: id,
       flags: YoutubePlayerFlags(
-        autoPlay: true,
+        autoPlay: false, // Changed from true to false
         mute: false,
       ),
     );
+
+    videoController!.addListener(_playListener);
+    
     this.url = url;
-    return () {};
+    return Future.value();
+  }
+
+  void _playListener() {
+    if (videoController != null &&
+        videoController!.value.isReady &&
+        (videoController!.value.playerState == PlayerState.cued || videoController!.value.playerState == PlayerState.buffering)) {
+      videoController!.play();
+      // Important: Remove the listener after calling play to avoid multiple calls
+      videoController!.removeListener(_playListener);
+    }
   }
 
 

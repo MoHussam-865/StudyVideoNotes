@@ -47,9 +47,13 @@ class _VideoNotesPageState extends State<VideoNotesView> {
             TextButton(
               child: const Text('Submit'),
               onPressed: () {
-                final String link = linkController.text;
-                viewModel.openVideoFromLink(context, link);
-                debugPrint("Submitted link: $link");
+                Future.delayed(Duration(microseconds: 1), () async {
+                  final String link = linkController.text;
+                  await viewModel.openVideoFromLink(context, link);
+                  debugPrint("Submitted link: $link");
+                  setState(() {});
+
+                });
                 Navigator.of(dialogContext).pop();
               },
             ),

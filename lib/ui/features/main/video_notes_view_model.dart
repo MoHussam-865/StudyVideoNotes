@@ -298,7 +298,10 @@ class VideoNotesViewModel extends ChangeNotifier {
     videoController = (MyYoutubePlayer() as Player);
 
     try {
-      initializeVideoFuture = videoController!.start(link);
+      // Assign the Future directly
+      initializeVideoFuture = videoController!.start(link); 
+      // Wait for the future to complete before proceeding
+      await initializeVideoFuture; 
       videoPath = videoController!.name;
       debugPrint('Video path: $videoPath');
       notifyListeners();

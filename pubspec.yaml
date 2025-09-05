@@ -38,12 +38,16 @@ dependencies:
   video_player: ^2.7.0
   video_player_win: ^3.2.0
   youtube_player_flutter: ^9.1.2
+  flutter_inappwebview: ^6.1.1+1
   file_picker: ^10.3.2
   path_provider: ^2.1.1
   flutter_quill: 11.4.2
   get_it: ^8.0.3
   json_annotation: ^4.9.0
   provider: ^6.1.5
+  media_kit: ^1.1.10
+  media_kit_video: ^1.1.10
+  youtube_explode_dart: ^2.2.1
 
 dev_dependencies:
   flutter_test:
